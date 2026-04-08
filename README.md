@@ -161,18 +161,19 @@ erDiagram
     users ||--o| profiles : "создает"
     users ||--o{ likes : "ставит"
     users ||--o{ visits : "просматривает"
+    users ||--o{ matches : "учавствует"
     profiles ||--|| profile_stats : "имеет"
 
     users {
-        bigint id PK
+        uuid id PK
         string telegram_id
         string username
         timestamp created_at
     }
 
     profiles {
-        bigint id PK
-        bigint user_id FK
+        uuid id PK
+        uuid user_id FK
         string name
         int age
         string gender
@@ -183,21 +184,28 @@ erDiagram
     }
 
     likes {
-        bigint id PK
-        bigint from_user_id FK
-        bigint to_user_id FK
+        uuid id PK
+        uuid from_user_id FK
+        uuid to_user_id FK
+        timestamp created_at
+    }
+
+    matches {
+        uuid id PK
+        uuid first_user_id FK
+        uuid second_user_id FK
         timestamp created_at
     }
 
     visits {
-        bigint id PK
-        bigint from_user_id FK
-        bigint to_user_id FK
+        uuid id PK
+        uuid from_user_id FK
+        uuid to_user_id FK
         timestamp created_at
     }
 
     profile_stats {
-        bigint profile_id PK, FK
+        uuid profile_id PK, FK
         int likes_count
         int visits_count
         int matches_count
@@ -253,6 +261,14 @@ visits - таблица, хранящая данные о просмотре а�
 - to_user_id
 - created_at
 
+matches - таблица метчей
+
+поля:
+
+- id
+- first_user_id
+- second_user_id
+- created_at
 
 
 profile_stats - таблица статистики анкеты

@@ -1,0 +1,9 @@
+bot_service/.env
+
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+
+postgres_data/
