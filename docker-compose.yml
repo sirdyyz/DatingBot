@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15-alpine
@@ -25,28 +23,61 @@ services:
       - "5672:5672"
       - "15672:15672"
 
+  redis:
+    image: redis:7-alpine
+    container_name: dating_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
   bot:
     build: 
       context: .
     container_name: dating_bot
     restart: always
+    environment:
+      - PYTHONPATH=/app
+    working_dir: /app/bot_service
+    command: python main.py
     env_file:
       - ./bot_service/.env
     depends_on:
       - postgres
       - rabbitmq
+      - redis
 
   moderation:
     build: 
       context: .
-    container_name: beta_moder_service
+    container_name: moderation_service
     restart: always
-    command: python beta_moder_service.py
+    environment:
+      - PYTHONPATH=/app:/app/bot_service
+    working_dir: /app/moderation_service
+    command: python main.py
+    env_file:
+    - ./bot_service/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+    ports:
+      - "8000:8000"
+
+  recommendation_service:
+    build: .
+    container_name: recommendation_service
+    restart: always
+    environment:
+      - PYTHONPATH=/app:/app/bot_service
+    working_dir: /app/recommendation_service
+    command: python main.py
     env_file:
       - ./bot_service/.env
     depends_on:
       - postgres
-      - rabbitmq
+      - redis
+    ports:
+      - "8001:8001"
 
 volumes:
   postgres_data:
