@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
-from models import ActionModel
-from rec_db import async_session, redis_client
+from recommendation_service.models import ActionModel
+from recommendation_service.rec_db import async_session, redis_client
 from sqlalchemy import delete, desc, not_, select
 
 from bot_service.database.models import Like, Profile, ProfileStat, User, Visit
@@ -57,7 +57,7 @@ async def get_next_profile(telegram_id: str):
                     Profile.city == s_city,
                     not_(Profile.user_id.in_(viewed))
                 )
-                .order_by(desc(ProfileStat.rating))
+                .order_by(desc(ProfileStat.rating), desc(Profile.id))
                 .limit(10)
             )
             res = await session.execute(q)
@@ -124,11 +124,6 @@ async def process_action(data: ActionModel):
             )
             if match_res.scalar_one_or_none():
                 is_match = True
-
-        # формула рейтинга
-        base_rating = 15.0 if len(to_prof.bio) > 30 else 10.0
-        conversion = (stat.likes_count / stat.visits_count) * 100
-        stat.rating = (base_rating * 0.4) + (conversion * 0.6)
 
         await session.commit()
         return {"status": "ok", "is_match": is_match}

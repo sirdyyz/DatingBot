@@ -79,5 +79,36 @@ services:
     ports:
       - "8001:8001"
 
+  celery_worker:
+    build: 
+      context: .
+    container_name: dating_celery_worker
+    restart: always
+    environment:
+      - PYTHONPATH=/app:/app/bot_service
+    working_dir: /app/recommendation_service
+    command: celery -A tasks.celery_app worker --loglevel=info
+    env_file:
+      - ./bot_service/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+
+  celery_beat:
+    build: 
+      context: .
+    container_name: dating_celery_beat
+    restart: always
+    environment:
+      - PYTHONPATH=/app:/app/bot_service
+    working_dir: /app/recommendation_service
+    command: celery -A tasks.celery_app beat --loglevel=info
+    env_file:
+      - ./bot_service/.env
+    depends_on:
+      - postgres
+      - rabbitmq
+      - celery_worker
+
 volumes:
   postgres_data:

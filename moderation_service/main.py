@@ -10,7 +10,6 @@ from sqlalchemy import select
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from rabbitmq import consume_rabbitmq
-
 from bot_service.database.engine import async_session
 from bot_service.database.models import Profile, ProfileStat
 
